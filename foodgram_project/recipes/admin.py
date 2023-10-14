@@ -19,7 +19,7 @@
 """
 
 from django.contrib import admin
-from .models import Ingredients, Recipe
+from .models import Ingredient, Recipe, Tag
 
 
 class RecipeAdmin(admin.ModelAdmin):
@@ -32,5 +32,11 @@ class IngredientsAdmin(admin.ModelAdmin):
     list_filter = ['name']
 
 
-admin.site.register(Ingredients, IngredientsAdmin)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ('name', 'color', 'slug')
+    list_filter = ['name']
+
+
+admin.site.register(Ingredient, IngredientsAdmin)
 admin.site.register(Recipe, RecipeAdmin)
+admin.site.register(Tag, TagAdmin)

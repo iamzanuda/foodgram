@@ -1,43 +1,86 @@
-from rest_framework import viewsets
-from .serializers import (FavouritesSerializer, IngredientsSerializer,
-                          RecipeSerializer, ShoppingCartSerializer,
-                          SubscriptionsSerializer, TagsSerializer,
-                          RecipeIngredientsSerializer, UserSerializer)
-from recipes.models import (Favourites, Ingredients, Recipe, ShoppingCart,
-                            Subscriptions, Tags, RecipeIngredients, User)
+from django.shortcuts import get_object_or_404
+from requests import Response
+from rest_framework import viewsets, status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import action
+from .serializers import (FavouritesSerializer,
+                          GetRecipeSerializer, PostRecipeSerializer,
+                          ShoppingCartSerializer, IngredientSerializer,
+                          TagSerializer, SubscriptionsSerializer,
+                          SubscribeUserSerializer)
+from recipes.models import (Favourites, Ingredient, Recipe,
+                            ShoppingCart, Tag, User, Subscribe)
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    """ViewSet User.
+    """ViewSet User."""
 
-    Пагинация
-    https://practicum.yandex.ru/trainer/backend-developer/lesson/2e8b7f0e-6b3b-40d1-8690-eec311ad588e/task/78a72e9e-b23f-412a-a2fd-be546432ca7f/?searchedText=LimitOffsetPagination
-    Авторизация
-    https://practicum.yandex.ru/trainer/backend-developer/lesson/9335cf18-a9a5-4b69-9bb7-dad742ff4c9f/task/142ad06e-3cf1-4cac-96fc-ad2f46f8d7d7/
-    """
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = SubscribeUserSerializer
+    permission_classes = (AllowAny,)
+
+    @action(detail=False, methods=['GET'])
+#            permission_classes=[IsAuthenticated]
+    def subscriptions(self, request):
+        """Возвращает пользователей,
+        на которых подписан текущий пользователь.
+        """
+        pages = self.paginate_queryset(
+            User.objects.filter(subscribers__user=self.request.user))
+        serializer = SubscriptionsSerializer(pages, many=True)
+        return self.get_paginated_response(serializer.data)
+
+    @action(detail=False, methods=['POST', 'DELETE'])
+#            permission_classes=[IsAuthenticated]
+    def subscribe(self, request, **kwargs):
+        author = get_object_or_404(User, id=kwargs['pk'])
+
+        if request.method == 'POST':
+            serializer = SubscribeUserSerializer(
+                author, data=request.data, context={"request": request})
+            serializer.is_valid(raise_exception=True)
+            Subscribe.objects.create(user=self.request.user, author=author)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        if request.method == 'DELETE':
+            subscription = get_object_or_404(
+                Subscribe, user=self.request.user, author=author)
+            subscription.delete()
+            return Response({'detail': 'Успешная отписка'},
+                            status=status.HTTP_204_NO_CONTENT)
 
 
-class TagsViewSet(viewsets.ReadOnlyModelViewSet):
-    """ViewSet Tag.
-    """
-    queryset = Tags.objects.all()
-    serializer_class = TagsSerializer
+class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet Tag."""
+
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+    permission_classes = (AllowAny,)
+    pagination_class = None
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    """ViewSet Recipe.
-    """
+    """ViewSet Recipe."""
+
     queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
+    permission_classes = (AllowAny,)
+    filter_backends = []
+
+    def get_serializer_class(self):
+        """Выбираем сериализатор в зависимости от типа запроса."""
+
+        if self.action in ('list', 'retrieve'):
+            return GetRecipeSerializer
+        return PostRecipeSerializer
 
 
-class IngredientsViewSet(viewsets.ModelViewSet):
+class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet Ingredient.
     """
-    queryset = Ingredients.objects.all()
-    serializer_class = IngredientsSerializer
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+    permission_classes = (AllowAny,)
+    pagination_class = None
 
 
 class ShoppingCartViewSet(viewsets.ModelViewSet):
@@ -45,24 +88,13 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
     """
     queryset = ShoppingCart.objects.all()
     serializer_class = ShoppingCartSerializer
+    permission_classes = (AllowAny,)
 
 
+@action(detail=True, methods=['post', 'delete'])
 class FavouritesViewSet(viewsets.ModelViewSet):
     """ViewSet Favourites.
     """
     queryset = Favourites.objects.all()
     serializer_class = FavouritesSerializer
-
-
-class SubscriptionsViewSet(viewsets.ModelViewSet):
-    """ViewSet Subscriptions.
-    """
-    queryset = Subscriptions.objects.all()
-    serializer_class = SubscriptionsSerializer
-
-
-class RecipeIngredientsViewSet(viewsets.ReadOnlyModelViewSet):
-    """ViewSet RecipeIngredients.
-    """
-    queryset = RecipeIngredients.objects.all()
-    serializer_class = RecipeIngredientsSerializer
+    permission_classes = (AllowAny,)

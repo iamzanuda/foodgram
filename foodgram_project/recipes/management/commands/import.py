@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from recipes.models import Ingredients
+from recipes.models import Ingredient
 
 DATA_ROOT = os.path.join(settings.BASE_DIR, "data")
 
@@ -32,12 +32,13 @@ class Command(BaseCommand):
 
                 for row in data:
                     name, measurement_unit = row
-                    ingredient = Ingredients(name=name,
-                                             measurement_unit=measurement_unit)
+                    ingredient = Ingredient(
+                        name=name,
+                        measurement_unit=measurement_unit)
                     ingredients_list.append(ingredient)
 
             with transaction.atomic():
-                Ingredients.objects.bulk_create(ingredients_list)
+                Ingredient.objects.bulk_create(ingredients_list)
 
             self.stdout.write(
                 self.style.SUCCESS(f'Данные из {filename} импортированны.'))
