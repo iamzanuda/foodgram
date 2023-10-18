@@ -19,7 +19,12 @@
 """
 
 from django.contrib import admin
-from .models import Ingredient, Recipe, Tag
+from .models import (Ingredient, Recipe, Tag, User,
+                     IngredientsAmount, ShoppingCart, Favourite, Follow)
+
+
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('email', 'username', 'first_name', 'last_name', 'password')
 
 
 class RecipeAdmin(admin.ModelAdmin):
@@ -27,9 +32,12 @@ class RecipeAdmin(admin.ModelAdmin):
     list_filter = ('author', 'name', 'tags')
 
 
-class IngredientsAdmin(admin.ModelAdmin):
+class IngredientAdmin(admin.ModelAdmin):
     list_display = ('name', 'measurement_unit')
-    list_filter = ['name']
+
+
+class IngredientsAmountAdmin(admin.ModelAdmin):
+    list_display = ('recipe', 'ingredients', 'amount')
 
 
 class TagAdmin(admin.ModelAdmin):
@@ -37,6 +45,23 @@ class TagAdmin(admin.ModelAdmin):
     list_filter = ['name']
 
 
-admin.site.register(Ingredient, IngredientsAdmin)
+class ShoppingCartAdmin(admin.ModelAdmin):
+    list_display = ('recipe', 'user')
+
+
+class FavouriteAdmin(admin.ModelAdmin):
+    list_display = ('recipe', 'user')
+
+
+class FollowAdmin(admin.ModelAdmin):
+    list_display = ('user', 'following')
+
+
+admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Tag, TagAdmin)
+admin.site.register(User, UserAdmin)
+admin.site.register(IngredientsAmount, IngredientsAmountAdmin)
+admin.site.register(ShoppingCart, ShoppingCartAdmin)
+admin.site.register(Favourite, FavouriteAdmin)
+admin.site.register(Follow, FollowAdmin)

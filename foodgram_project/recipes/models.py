@@ -48,18 +48,15 @@ class Tag(models.Model):
     ]
 
     name = models.CharField(
-        max_length=16,
-        unique=True,
+        max_length=200,
         verbose_name='Название тэга')
     color = models.CharField(
-        max_length=16,
-        unique=True,
+        max_length=7,
         choices=TAG_COLOR_CODE,
         verbose_name='Цветовой код')
     slug = models.SlugField(
-        max_length=50,
-        unique=True,
-        verbose_name='Слаг тэга')
+        max_length=200,
+        verbose_name='Уникальный слаг')
 
     def __str__(self):
         return self.name
@@ -76,7 +73,7 @@ class Ingredient(models.Model):
         verbose_name='Единицы измерения')
 
     def __str__(self):
-        return f'{self.name}, {self.measurement_unit}'
+        return f'{self.name} - {self.measurement_unit}'
 
 
 class Recipe(models.Model):
@@ -135,54 +132,52 @@ class IngredientsAmount(models.Model):
 class ShoppingCart(models.Model):
     """ShoppingCart model."""
 
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name='shoppingcarts_recipe',
-        verbose_name='Рецепт')
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         blank=False,
-        related_name='shoppingcarts_user',
+        related_name='user',
         verbose_name='Пользователь')
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='recipe',
+        verbose_name='Рецепт')
 
     def __str__(self):
         return f'{self.user.username} - {self.recipe.name}'
 
 
-class Favourites(models.Model):
+class Favourite(models.Model):
     """Favourites model."""
 
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name='favourites_user',
-        verbose_name='Рецепт')
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         blank=False,
-        related_name='favourites_user',
+        related_name='favourites',
         verbose_name='Пользователь')
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='favourites',
+        verbose_name='Рецепт')
 
     def __str__(self):
         return f'{self.user.username} - {self.recipe.name}'
 
 
-class Subscribe(models.Model):
+class Follow(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='subscribes_user',
-        verbose_name='Подписчик'
-    )
-    author = models.ForeignKey(
+        related_name='follower',
+        verbose_name='Подписчик')
+    following = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='subscribes_author',
-        verbose_name='Подписка'
-    )
+        related_name='following',
+        verbose_name='Подписка')
 
     def __str__(self):
-        return f'{self.user.username} - {self.author.username}'
+        return f'{self.user.username} - {self.following.username}'
