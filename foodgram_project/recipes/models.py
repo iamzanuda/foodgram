@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.core.validators import MinValueValidator
+# from django.core.validators import MinValueValidator
 
 from .validators import validate_username
 
@@ -86,6 +86,11 @@ class Recipe(models.Model):
     tags = models.ManyToManyField(
         Tag,
         verbose_name='Тэг')
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='recipes',
+        verbose_name='Имя автора')
     image = models.ImageField(
         upload_to='images/',
         verbose_name='Изображение блюда')
@@ -98,11 +103,6 @@ class Recipe(models.Model):
     cooking_time = models.PositiveSmallIntegerField(
         default=1,
         verbose_name='Время приготовления в минутах')
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='recipes',
-        verbose_name='Имя автора')
 
     def __str__(self):
         return self.name
@@ -114,19 +114,19 @@ class IngredientsAmount(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='recipes',
+        related_name='recipes_amount',
         verbose_name='Рецепт')
-    ingredients = models.ForeignKey(
+    ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        related_name='ingredients',
+        related_name='ingredients_amount',
         verbose_name='Ингредиенты')
     amount = models.PositiveSmallIntegerField(
         default=1,
         verbose_name='Количество')
 
     def __str__(self):
-        return f'{self.recipe} - {self.ingredients}: {self.amount}'
+        return f'{self.recipe} - {self.ingredient}: {self.amount}'
 
 
 class ShoppingCart(models.Model):

@@ -1,8 +1,7 @@
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import viewsets, status
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny  # IsAuthenticated
 from rest_framework.decorators import action
 from .serializers import (PostUserSerializer, GetUserSerializer,
                           GetRecipeSerializer, PostRecipeSerializer,
@@ -88,7 +87,8 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    """ViewSet Recipe.
+    """Получаем список рецептов (api/recipes/)
+    и конкретный рецепт (api/recipes/id).
 
     Эндпоинты @action:
         download_shopping_cartself
@@ -101,6 +101,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """Сохраняем текущего пользователя."""
+
         serializer.save(author=self.request.user)
 
     def get_serializer_class(self):
@@ -113,23 +114,20 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=False,
             methods=['GET'],
             permission_classes=[AllowAny],  # IsAuthenticated
-            url_path='download-shopping-cartself')
-    def download_shopping_cartself(self, request, pk=None):
+            url_path='download-shopping-cart')
+    def download_shopping_cart(self, request, pk=None):
         """Скачать файл со списком покупок.
-
-        Доступно только авторизованным пользователям.
         """
         ...
 
-    @action(detail=False, 
+    @action(detail=False,
             methods=['POST', 'DELETE'],
             permission_classes=[AllowAny],  # IsAuthenticated
             url_path='shopping-cart')
     def shopping_cart(self, request, pk=None):
         """Добавить рецепт в список покупок.
-
-        Доступно только авторизованным пользователям.
         """
+
         recipe = get_object_or_404(Recipe, id=pk)
 
         if request.method == 'POST':
@@ -137,21 +135,21 @@ class RecipeViewSet(viewsets.ModelViewSet):
                                                data=request.data,
                                                context={"request": request})
             serializer.is_valid(raise_exception=True)
-            if not Favourite.objects.filter(user=request.user,
-                                            recipe=recipe).exists():
-                Favourite.objects.create(user=request.user,
-                                         recipe=recipe)
+            if not ShoppingCart.objects.filter(user=request.user,
+                                               recipe=recipe).exists():
+                ShoppingCart.objects.create(user=request.user,
+                                            recipe=recipe)
                 return Response(serializer.data,
                                 status=status.HTTP_201_CREATED)
-            return Response({'errors': 'Рецепт уже находится в избранном.'},
+            return Response({'errors': 'Рецепт уже есть в списке покупок.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
         if request.method == 'DELETE':
-            favourite = get_object_or_404(Favourite,
+            favourite = get_object_or_404(ShoppingCart,
                                           user=request.user,
                                           recipe=recipe)
             favourite.delete()
-            return Response({'detail': 'Рецепт удален из избранного.'},
+            return Response({'detail': 'Рецепт удален из списка.'},
                             status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False,

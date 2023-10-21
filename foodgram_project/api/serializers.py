@@ -1,7 +1,7 @@
 import base64  # Модуль с функциями кодирования и декодирования base64
 
 from django.core.files.base import ContentFile
-from django.forms import ValidationError
+# from django.forms import ValidationError
 from rest_framework import serializers
 
 from recipes.models import (Favourite, Ingredient, IngredientsAmount, Recipe,
@@ -224,6 +224,9 @@ class IngredientsAmountSerializer(serializers.ModelSerializer):
 class GetRecipeSerializer(serializers.ModelSerializer):
     """Возвращает список рецептов и рецепт по его id.
 
+    Страница доступна всем пользователям.
+    Доступна фильтрация по избранному, автору, списку покупок и тегам.
+
     GET /api/recipes/ список рецептов
     GET /api/recipes/{id}/ получение рецепта
     """
@@ -233,7 +236,7 @@ class GetRecipeSerializer(serializers.ModelSerializer):
     author = GetUserSerializer()
     ingredients = IngredientsAmountSerializer(
         many=True,
-        source='recipes')
+        source='recipes_amount')
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
     image = Base64ImageField(
@@ -264,21 +267,14 @@ class GetRecipeSerializer(serializers.ModelSerializer):
 
 
 class AddIngredientsSerializer(serializers.ModelSerializer):
-    """POST запрос для добавления ингридиентов в рецепт.
+    """Отображаем необходимые поля при POST запросе на создание рецепта."""
 
-    Отображаем необходимые поля при POST запросе на создание рецепта.
-    """
-
-    id = serializers.PrimaryKeyRelatedField(
-        queryset=Ingredient.objects.all())
-    amount = serializers.IntegerField()
+    # id = serializers.PrimaryKeyRelatedField(
+    #     queryset=Ingredient.objects.all())
 
     class Meta:
         model = IngredientsAmount
         fields = ('id', 'amount')
-        extra_kwargs = {
-            'id': {'required': True},
-            'amount': {'required': True}}
 
 
 class PostRecipeSerializer(serializers.ModelSerializer):
@@ -292,7 +288,10 @@ class PostRecipeSerializer(serializers.ModelSerializer):
         queryset=Tag.objects.all())
     ingredients = AddIngredientsSerializer(
         many=True)
-    id = serializers.ReadOnlyField()
+    cooking_time = serializers.IntegerField()
+    image = Base64ImageField(
+        required=False,
+        allow_null=True)
 
     class Meta:
         model = Recipe
@@ -313,18 +312,27 @@ class PostRecipeSerializer(serializers.ModelSerializer):
         и выбрал ингридиент.
         """
 
-        tags = data.get('tags')
-        ingredients = data.get('ingredients')
-
+        tags = data.get('tags', [])
+        ingredients = data.get('ingredients', [])
+        print(ingredients)
         if not tags or not ingredients:
             raise serializers.ValidationError(
                 'Не указан тэг и/или не выбран ингридиент.')
-        if len(tags) != len(set(tags)):
+
+        tag_ids = [tag.id for tag in tags]
+        if len(tag_ids) != len(set(tag_ids)):
             raise serializers.ValidationError(
                 'Тэги не уникальны.')
-        if len(ingredients) != len(set(ingredients)):
+
+        ingredient_ids = {
+            ingredient['id'].id if isinstance(ingredient['id'], Ingredient)
+            else ingredient['id']
+            for ingredient in ingredients}
+
+        if len(ingredient_ids) != len(ingredients):
             raise serializers.ValidationError(
                 'Ингридиенты не уникальны.')
+
         return data
 
     def create(self, validated_data):
@@ -332,24 +340,17 @@ class PostRecipeSerializer(serializers.ModelSerializer):
         на основе валидированных данных.
         """
 
-        tags = validated_data.get('tags')
-        ingredients = validated_data.get('ingredients')
+        tags = validated_data.pop('tags')
+        ingredients = list(validated_data.pop('ingredients'))
 
-        # Создание рецепта
         recipe = Recipe.objects.create(**validated_data)
-
-        # Привязка тэгов к рецепту
         recipe.tags.set(tags)
 
-        # Добавление ингредиентов к рецепту
         for ingredient in ingredients:
-            ingredient_id = ingredient.get('id')
-            amount = ingredient.get('amount')
-            ingredient_obj = Ingredient.objects.get(id=ingredient_id)
-            IngredientsAmount.objects.create(
+            IngredientsAmount(
                 recipe=recipe,
-                ingredient=ingredient_obj,
-                amount=amount)
+                ingredient=Ingredient.objects.get(id=ingredient['id'].id),
+                amount=ingredient.get('amount'))
         return recipe
 
     def update(self, instance, validated_data):
@@ -357,27 +358,21 @@ class PostRecipeSerializer(serializers.ModelSerializer):
         на основе валидированных данных.
         """
 
-        tags = validated_data.get('tags')
-        ingredients = validated_data.get('ingredients')
+        tags = validated_data.pop('tags')
+        ingredients_data = validated_data.pop('ingredients')
 
-        # Обновление тегов рецепта
+        instance.tags.clear()
+        instance.ingredients.clear()
         instance.tags.set(tags)
 
-        # Удаляем все существующие связи ингредиентов с рецептом
-        instance.ingredients.clear()
-
-        # Добавляем новые связи ингредиентов
-        for ingredient in ingredients:
-            ingredient_id = ingredient.get('id')
-            amount = ingredient.get('amount')
-            ingredient_obj = Ingredient.objects.get(id=ingredient_id)
-            IngredientsAmount.objects.create( # --------------------------------!!!!!!!!!!!!!!!!!!!!!!!
+        for ingredient in ingredients_data:
+            IngredientsAmount(
                 recipe=instance,
-                ingredient=ingredient_obj,
-                amount=amount)
+                ingredient=Ingredient.objects.get(id=ingredient['id'].id),
+                amount=ingredient.get('amount'))
 
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
 
         instance.save()
         return instance
