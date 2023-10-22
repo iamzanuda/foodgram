@@ -1,15 +1,19 @@
+import io
+
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from rest_framework.response import Response
-from rest_framework import viewsets, status
-from rest_framework.permissions import AllowAny  # IsAuthenticated
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from .serializers import (PostUserSerializer, GetUserSerializer,
-                          GetRecipeSerializer, PostRecipeSerializer,
-                          IngredientSerializer, FollowPostSerializer,
-                          TagSerializer, FollowGetSerializer,
-                          BriefRecipeSerializer)
-from recipes.models import (Favourite, Ingredient, Recipe,
-                            ShoppingCart, Tag, User, Follow)
+from rest_framework.permissions import AllowAny  # IsAuthenticated
+from rest_framework.response import Response
+
+from .serializers import (BriefRecipeSerializer, FollowGetSerializer,
+                          FollowPostSerializer, GetRecipeSerializer,
+                          GetUserSerializer, IngredientSerializer,
+                          PostRecipeSerializer, PostUserSerializer,
+                          TagSerializer)
+from recipes.models import (Favourite, Follow, Ingredient, IngredientsAmount,
+                            Recipe, ShoppingCart, Tag, User)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -116,9 +120,39 @@ class RecipeViewSet(viewsets.ModelViewSet):
             permission_classes=[AllowAny],  # IsAuthenticated
             url_path='download-shopping-cart')
     def download_shopping_cart(self, request, pk=None):
-        """Скачать файл со списком покупок.
+        """Достаем ингридиент и количество, отдаем пользователю
+        фаил в формате txt .
         """
-        ...
+
+        ingredients_amounts = IngredientsAmount.objects.select_related(
+            'recipe', 'ingredient').filter(recipe__author=request.user)
+
+        print(ingredients_amounts)
+
+        list_of_ingredients = []
+
+        for item in ingredients_amounts:
+            print(item.recipe)
+            for ingredient in item.recipe.ingredients.all():
+                print(item.recipe)
+                ingredient_name = ingredient.name
+                amount = item.amount
+                measurement_unit = ingredient.measurement_unit
+                list_of_ingredients.append(
+                    f'{ingredient_name}: {amount} {measurement_unit}')
+
+        output = io.StringIO()
+        print(output)
+        for item in list_of_ingredients:
+            output.write(item)
+            output.write('\n')
+        output.seek(0)
+
+        response = HttpResponse(content_type='text/plain')
+        response['Content-Disposition'] = 'attachment; filename="ingredients.txt"'
+        response.write(output.getvalue())
+
+        return response
 
     @action(detail=False,
             methods=['POST', 'DELETE'],
