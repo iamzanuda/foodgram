@@ -4,16 +4,28 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny  # IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .serializers import (BriefRecipeSerializer, FollowGetSerializer,
-                          FollowPostSerializer, GetRecipeSerializer,
-                          GetUserSerializer, IngredientSerializer,
-                          PostRecipeSerializer, PostUserSerializer,
-                          TagSerializer)
-from recipes.models import (Favourite, Follow, Ingredient, IngredientsAmount,
-                            Recipe, ShoppingCart, Tag, User)
+from .serializers import (BriefRecipeSerializer,
+                          FollowGetSerializer,
+                          FollowPostSerializer,
+                          GetRecipeSerializer,
+                          GetUserSerializer,
+                          IngredientSerializer,
+                          PostRecipeSerializer,
+                          PostUserSerializer,
+                          TagSerializer,
+                          )
+from recipes.models import (Favourite,
+                            Follow,
+                            Ingredient,
+                            IngredientsAmount,
+                            Recipe,
+                            ShoppingCart,
+                            Tag,
+                            User,
+                            )
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -25,7 +37,6 @@ class UserViewSet(viewsets.ModelViewSet):
     """
 
     queryset = User.objects.all()
-    permission_classes = (AllowAny,)
 
     def get_serializer_class(self):
         """Выбираем сериализатор в зависимости от типа запроса."""
@@ -36,7 +47,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False,
             methods=['GET'],
-            permission_classes=[AllowAny])  # IsAuthenticated
+            permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
         """Возвращает список пользователей,
         на которых подписан текущий пользователь.
@@ -56,7 +67,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False,
             methods=['POST', 'DELETE'],
-            permission_classes=[AllowAny])  # IsAuthenticated
+            permission_classes=[IsAuthenticated])
     def subscribe(self, request, **kwargs):
         """Подписаться на пользователя.
 
@@ -101,7 +112,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     """
 
     queryset = Recipe.objects.all()
-    permission_classes = (AllowAny,)
 
     def perform_create(self, serializer):
         """Сохраняем текущего пользователя."""
@@ -117,7 +127,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=False,
             methods=['GET'],
-            permission_classes=[AllowAny],  # IsAuthenticated
+            permission_classes=[IsAuthenticated],
             url_path='download-shopping-cart')
     def download_shopping_cart(self, request, pk=None):
         """Достаем ингридиент и количество, отдаем пользователю
@@ -149,18 +159,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
         output.seek(0)
 
         response = HttpResponse(content_type='text/plain')
-        response['Content-Disposition'] = 'attachment; filename="ingredients.txt"'
+        response['Content-Disposition'] = 'attachment; filename="list.txt"'
         response.write(output.getvalue())
 
         return response
 
     @action(detail=False,
             methods=['POST', 'DELETE'],
-            permission_classes=[AllowAny],  # IsAuthenticated
+            permission_classes=[IsAuthenticated],
             url_path='shopping-cart')
     def shopping_cart(self, request, pk=None):
-        """Добавить рецепт в список покупок.
-        """
+        """Добавить рецепт в список покупок."""
 
         recipe = get_object_or_404(Recipe, id=pk)
 
@@ -188,7 +197,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=False,
             methods=['POST', 'DELETE'],
-            permission_classes=[AllowAny])  # IsAuthenticated
+            permission_classes=[IsAuthenticated])
     def favorite(self, request, pk=None):
         """Добавить рецепт в список избранное.
 
@@ -221,11 +230,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
-    """ViewSet Ingredient.
-    """
+    """ViewSet Ingredient."""
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    permission_classes = (AllowAny,)
     pagination_class = None
 
 
@@ -234,37 +241,4 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = (AllowAny,)
     pagination_class = None
-
-
-# class ShoppingCartViewSet(viewsets.ModelViewSet):
-#     """ViewSet ShoppingList.
-#     """
-#     queryset = ShoppingCart.objects.all()
-#     serializer_class = ShoppingCartSerializer
-#     permission_classes = (AllowAny,)
-
-
-# class FavouritesViewSet(viewsets.ModelViewSet):
-#     """ViewSet Favourites.
-#     """
-#     queryset = Favourites.objects.all()
-#     serializer_class = FavouritesSerializer
-#     permission_classes = (AllowAny,)
-
-
-# class FollowViewSet(viewsets.ModelViewSet):
-#     """ViewSet Follow.
-
-#     Вьюпоинты:
-#         GET /api/users/subscriptions/
-#         POST /api/users/{id}/subscribe/
-#     """
-
-#     serializer_class = FollowGetSerializer
-#     permission_classes = (AllowAny,)
-#     # http_method_names = ['get', 'post', 'patch', 'delete']
-
-#     def get_queryset(self):
-#         return User.objects.filter(following__user=self.request.user)

@@ -1,11 +1,18 @@
-import base64  # Модуль с функциями кодирования и декодирования base64
+import base64
 
 from django.core.files.base import ContentFile
-# from django.forms import ValidationError
+from django.forms import ValidationError
 from rest_framework import serializers
 
-from recipes.models import (Favourite, Ingredient, IngredientsAmount, Recipe,
-                            ShoppingCart, Tag, User, Follow)
+from recipes.models import (Favourite,
+                            Ingredient,
+                            IngredientsAmount,
+                            Recipe,
+                            ShoppingCart,
+                            Tag,
+                            User,
+                            Follow,
+                            )
 
 
 class Base64ImageField(serializers.ImageField):
@@ -65,7 +72,6 @@ class GetUserSerializer(serializers.ModelSerializer):
         return user.following.filter(user=obj).exists()
 
 
-# -----------------------FOLLOW-----------------------
 class BriefRecipeSerializer(serializers.ModelSerializer):
     """Brief Recipe Serializer для GET запросов.
 
@@ -143,7 +149,6 @@ class FollowGetSerializer(serializers.ModelSerializer):
         return serializer.data
 
 
-# -----------------------TAG-----------------------
 class TagSerializer(serializers.ModelSerializer):
     """Tag Serializer.
 
@@ -158,7 +163,6 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'color', 'slug')
 
 
-# -----------------------FAVORITE-------------------------
 class BriefRecipeSerializer(serializers.ModelSerializer):
     """Brief Recipe Serializer для GET запросов.
 
@@ -175,17 +179,6 @@ class BriefRecipeSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = ('id', 'name', 'image',
                   'cooking_time')
-
-
-class FavouritesSerializer(serializers.ModelSerializer):
-    """Только POST запрос для добавления рецепта в список избранного.
-
-    POST /api/recipes/{id}/favorite/ добавить рецепт в избранное
-    """
-
-    class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -269,9 +262,6 @@ class GetRecipeSerializer(serializers.ModelSerializer):
 class AddIngredientsSerializer(serializers.ModelSerializer):
     """Отображаем необходимые поля при POST запросе на создание рецепта."""
 
-    # id = serializers.PrimaryKeyRelatedField(
-    #     queryset=Ingredient.objects.all())
-
     class Meta:
         model = IngredientsAmount
         fields = ('id', 'amount')
@@ -295,7 +285,6 @@ class PostRecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        # попробовать добавить поле author, для сохранения текущего юзера
         fields = ('id', 'ingredients', 'tags', 'image',
                   'name', 'text', 'cooking_time')
         extra_kwargs = {
@@ -312,26 +301,19 @@ class PostRecipeSerializer(serializers.ModelSerializer):
         и выбрал ингридиент.
         """
 
-        tags = data.get('tags', [])
-        ingredients = data.get('ingredients', [])
-        print(ingredients)
-        if not tags or not ingredients:
-            raise serializers.ValidationError(
-                'Не указан тэг и/или не выбран ингридиент.')
+        tags = data.get('tags')
+        ingredients = data.get('ingredients')
 
-        tag_ids = [tag.id for tag in tags]
-        if len(tag_ids) != len(set(tag_ids)):
-            raise serializers.ValidationError(
-                'Тэги не уникальны.')
+        if not tags:
+            raise ValidationError('Добавьте как минимум 1 тег.')
 
-        ingredient_ids = {
-            ingredient['id'].id if isinstance(ingredient['id'], Ingredient)
-            else ingredient['id']
-            for ingredient in ingredients}
+        if not ingredients:
+            raise ValidationError('Добавьте как минимум 1 ингредиент.')
 
-        if len(ingredient_ids) != len(ingredients):
+        ingredients_ids = [item['id'] for item in ingredients]
+        if len(ingredients_ids) != len(set(ingredients_ids)):
             raise serializers.ValidationError(
-                'Ингридиенты не уникальны.')
+                'Ингредиенты не должны повторяться.')
 
         return data
 
@@ -376,31 +358,3 @@ class PostRecipeSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
-
-
-# -----------------------SHOPPING CART-----------------------
-class ShoppingCartSerializer(serializers.ModelSerializer):
-    """ShoppingList Serializer."""
-
-    class Meta:
-        model = ShoppingCart
-        fields = ('recipe', 'user')
-
-
-class DownloadShoppingCart(serializers.ModelSerializer):
-    ingredients = serializers.SerializerMethodField()
-    amount = serializers.SerializerMethodField()
-    measurement_unit = serializers.SerializerMethodField()
-
-    class Meta:
-        model = ShoppingCart
-        fields = ('id', 'ingredients', 'amount', 'measurement_unit')
-
-    def get_ingredient(self, obj):
-        return obj.recipe.ingredients.name
-
-    def get_amount(self, obj):
-        return obj.recipe.ingredients.amount
-
-    def get_measurement_unit(self, obj):
-        return obj.recipe.ingredients.measurement_unit
