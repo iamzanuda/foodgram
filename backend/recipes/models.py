@@ -5,7 +5,7 @@ from .validators import validate_username
 
 
 class User(AbstractUser):
-    """User model."""
+    """AbstractUser model."""
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name',
@@ -14,21 +14,26 @@ class User(AbstractUser):
     email = models.EmailField(
         max_length=254,
         unique=True,
-        verbose_name='Адрес электронной почты')
+        blank=False,
+        verbose_name='Адрес электронной почты',)
     username = models.CharField(
         max_length=150,
         unique=True,
+        blank=False,
         validators=[validate_username],
-        verbose_name='Уникальный юзернейм')
+        verbose_name='Уникальный юзернейм',)
     first_name = models.CharField(
         max_length=150,
-        verbose_name='Имя')
+        blank=False,
+        verbose_name='Имя',)
     last_name = models.CharField(
         max_length=150,
-        verbose_name='Фамилия')
+        blank=False,
+        verbose_name='Фамилия',)
     password = models.CharField(
         max_length=150,
-        verbose_name='Пароль')
+        blank=False,
+        verbose_name='Пароль',)
 
     def __str__(self):
         return self.username
@@ -140,7 +145,7 @@ class ShoppingCart(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='recipe',
+        related_name='shopping_cart_recipe',
         verbose_name='Рецепт')
 
     def __str__(self):
@@ -176,7 +181,7 @@ class Follow(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='following',
-        verbose_name='Подписка')
+        verbose_name='На кого подписан')
 
     def __str__(self):
         return f'{self.user.username} - {self.following.username}'
