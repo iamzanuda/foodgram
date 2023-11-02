@@ -206,36 +206,43 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Удалено из списка покупок.'},
                             status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True,
+    @action(detail=False,
             methods=['GET'],
-            permission_classes=[IsAuthenticated],
-            url_path='download-shopping-cart')
+            permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request, pk=None):
         """Достаем ингридиент и количество, отдаем пользователю
         фаил в формате txt .
         """
 
         ingredients_amounts = IngredientsAmount.objects.select_related(
-            'recipe', 'ingredient').filter(recipe__author=request.user)
+            'recipe', 'ingredient'
+        ).filter(recipe__shop_recipe__user=request.user)
 
-        print(ingredients_amounts)
+        receips_in_cart_ids = set(
+            ShoppingCart
+            .objects
+            .filter(user=request.user)
+            .values_list('recipe__id', flat=True)
+        )
 
-        list_of_ingredients = []
+        dict_of_ingredients = {}
 
         for item in ingredients_amounts:
-            print(item.recipe)
-            for ingredient in item.recipe.ingredients.all():
-                print(item.recipe)
-                ingredient_name = ingredient.name
-                amount = item.amount
-                measurement_unit = ingredient.measurement_unit
-                list_of_ingredients.append(
-                    f'{ingredient_name}: {amount} {measurement_unit}')
+            if item.recipe.id not in receips_in_cart_ids:
+                continue
+            ingredient_name = item.ingredient.name
+            measurement_unit = item.ingredient.measurement_unit
+            if ingredient_name not in dict_of_ingredients:
+                dict_of_ingredients[ingredient_name] = {
+                    'amount': 0,
+                    'measurement_unit': measurement_unit
+                }
+            dict_of_ingredients[ingredient_name]['amount'] += item.amount
 
         output = io.StringIO()
         print(output)
-        for item in list_of_ingredients:
-            output.write(item)
+        for key, item in dict_of_ingredients.items():
+            output.write(f'{key}: {item["amount"]} {item["measurement_unit"]}')
             output.write('\n')
         output.seek(0)
 

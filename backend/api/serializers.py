@@ -2,7 +2,7 @@ import base64
 
 from django.core.files.base import ContentFile
 from django.forms import ValidationError
-from django.shortcuts import get_object_or_404
+# from django.shortcuts import get_object_or_404
 from rest_framework import serializers, status
 
 from recipes.models import (Favourite,
@@ -13,7 +13,7 @@ from recipes.models import (Favourite,
                             Tag,
                             User,
                             Follow,
-                            Favourite
+                            Favourite,
                             )
 
 
@@ -107,23 +107,17 @@ class FollowingSerializer(serializers.ModelSerializer):
                             'last_name',
                             )
 
-    # def validate(self, data):
+    def validate(self, data):
 
-    #     author = self.instance
-    #     user = self.context.get("request").user
-    #     if user.following.filter(author=author).exists():
-    #         raise ValidationError(
-    #             detail="Вы уже подписаны на этого пользователя!",
-    #             code=status.HTTP_400_BAD_REQUEST,
-    #         )
+        author = self.instance
+        user = self.context.get("request").user
+        if user == author:
+            raise ValidationError(
+                detail="Вы не можете подписаться на самого себя!",
+                code=status.HTTP_400_BAD_REQUEST,
+            )
 
-    #     if user == author:
-    #         raise ValidationError(
-    #             detail="Вы не можете подписаться на самого себя!",
-    #             code=status.HTTP_400_BAD_REQUEST,
-    #         )
-
-    #     return data
+        return data
 
     def get_is_subscribed(self, obj):
 
@@ -292,10 +286,7 @@ class PostRecipeSerializer(serializers.ModelSerializer):
         """Валидируем тэги."""
 
         if not obj.get('tags'):
-            raise serializers.ValidationError(
-                'Выберите тэг.'
-            )
-
+            raise serializers.ValidationError('Выберите тэг.')
         return obj
 
     def validate_ingredients(self, obj):
@@ -304,25 +295,25 @@ class PostRecipeSerializer(serializers.ModelSerializer):
         if not obj:
             raise serializers.ValidationError('Выберите ингридиент.')
 
-        ingredient_id_list = [item['id'].id for item in obj]
-        unique_ingredient_id_list = set(ingredient_id_list)
-        if len(ingredient_id_list) != len(unique_ingredient_id_list):
-            raise serializers.ValidationError(
-                'Ингредиенты не должны повторяться.')
-
+        for item in obj:
+            ingredient_id_list = item['id']
+            unique_ingredient_id_list = set(ingredient_id_list)
+            if len(ingredient_id_list) != len(unique_ingredient_id_list):
+                raise serializers.ValidationError(
+                    'Ингредиенты не должны повторяться.'
+                )
         return obj
 
     def add_items(self, recipe, tags, ingredients):
         """Добавляем тэги и ингридиенты в рецепт."""
 
         recipe.tags.set(tags)
-        IngredientsAmount.objects.bulk_create(
-            [IngredientsAmount(
+        for ingredient in ingredients:
+            IngredientsAmount.objects.create(
                 recipe=recipe,
                 ingredient=Ingredient.objects.get(pk=ingredient['id']),
                 amount=ingredient['amount']
-            ) for ingredient in ingredients]
-        )
+            )
 
     def create(self, validated_data):
         """Создаем новый экземпляр модели рецепта
