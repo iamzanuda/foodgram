@@ -14,25 +14,25 @@ class User(AbstractUser):
     email = models.EmailField(
         max_length=254,
         unique=True,
-        blank=False,
+        # blank=False,
         verbose_name='Адрес электронной почты',)
     username = models.CharField(
         max_length=150,
         unique=True,
-        blank=False,
+        # blank=False,
         validators=[validate_username],
         verbose_name='Уникальный юзернейм',)
     first_name = models.CharField(
         max_length=150,
-        blank=False,
+        # blank=False,
         verbose_name='Имя',)
     last_name = models.CharField(
         max_length=150,
-        blank=False,
+        # blank=False,
         verbose_name='Фамилия',)
     password = models.CharField(
         max_length=150,
-        blank=False,
+        # blank=False,
         verbose_name='Пароль',)
 
     def __str__(self):
@@ -140,7 +140,7 @@ class ShoppingCart(models.Model):
         User,
         on_delete=models.CASCADE,
         blank=False,
-        related_name='user',
+        related_name='shopping_cart_user',
         verbose_name='Пользователь')
     recipe = models.ForeignKey(
         Recipe,
