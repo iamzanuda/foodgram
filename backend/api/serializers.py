@@ -195,7 +195,7 @@ class IngredientsAmountSerializer(serializers.ModelSerializer):
     Recipe и Ingreduent.
     """
 
-    id = serializers.ReadOnlyField(
+    id = serializers.IntegerField(
         source='ingredient.id')
     name = serializers.ReadOnlyField(
         source='ingredient.name')
@@ -275,44 +275,43 @@ class PostRecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField(
         required=False,
         allow_null=True)
-    id = serializers.ReadOnlyField()
 
     class Meta:
         model = Recipe
         fields = ('id', 'ingredients', 'tags', 'image',
                   'name', 'text', 'cooking_time')
 
-    def validate_tags(self, obj):
+    def validate_tags(self, value):
         """Валидируем тэги."""
 
-        if not obj.get('tags'):
-            raise serializers.ValidationError('Выберите тэг.')
-        return obj
+        if not value:
+            raise ValidationError('Укажите тэг.')
+        return value
 
-    def validate_ingredients(self, obj):
+    def validate_ingredients(self, value):
         """Валидируем ингридиенты."""
 
-        if not obj:
-            raise serializers.ValidationError('Выберите ингридиент.')
+        if not value:
+            raise ValidationError('Выберите ингридиент.')
 
-        for item in obj:
-            ingredient_id_list = item['id']
-            unique_ingredient_id_list = set(ingredient_id_list)
-            if len(ingredient_id_list) != len(unique_ingredient_id_list):
+        for item in value:
+            ingredients = item['id']
+            if len(ingredients) != len(set(ingredients)):
                 raise serializers.ValidationError(
-                    'Ингредиенты не должны повторяться.'
+                    'Ингридиенты не должны повторяться.'
                 )
-        return obj
 
-    def add_items(self, recipe, tags, ingredients):
+        return value
+
+    def add_items(self, recipe, ingredients):
         """Добавляем тэги и ингридиенты в рецепт."""
-
-        recipe.tags.set(tags)
         for ingredient in ingredients:
-            IngredientsAmount.objects.create(
+            IngredientsAmount(
+                ingredient=Ingredient
+                .objects
+                .get(id=ingredient['ingredient']['id']),
                 recipe=recipe,
-                ingredient=Ingredient.objects.get(pk=ingredient['id']),
-                amount=ingredient['amount']
+                amount=ingredient['amount'],
             )
 
     def create(self, validated_data):
@@ -324,7 +323,8 @@ class PostRecipeSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(author=self.context['request'].user,
                                        **validated_data)
-        self.add_items(recipe, tags, ingredients)
+        recipe.tags.set(tags)
+        self.add_items(recipe, ingredients)
         return recipe
 
     def update(self, instance: Recipe, validated_data):

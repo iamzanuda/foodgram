@@ -85,26 +85,16 @@ class CustomUserViewSet(UserViewSet):
         Страница 'Мои подписки'
         """
 
-        # queryset = User.objects.in_bulk(
-        #     Follow
-        #     .objects
-        #     .filter(user=request.user)
-        #     .values_list('following', flat=True)
-        # )
-
-        # queryset = (
-        #     User
-        #     .objects
-        #     .all()
-        # )
-        # paginator = PageNumberPagination()
-        # paginator.page_size_query_param = 'limit'
-        # page = paginator.paginate_queryset(queryset, request)
+        user_following_ids_set = set(
+            Follow
+            .objects
+            .filter(user=request.user)
+            .values_list('following', flat=True)
+        )
 
         queryset = self.paginate_queryset(
-            User
-            .objects
-            .filter(user=request.user))
+            User.objects.filter(pk__in=user_following_ids_set)
+        )
 
         serializer = FollowingSerializer(
             queryset,
