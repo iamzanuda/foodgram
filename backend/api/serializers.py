@@ -112,13 +112,13 @@ class FollowingSerializer(serializers.ModelSerializer):
 
         if user.following.filter(following=author).exists():
             raise ValidationError(
-                detail='Вы уже подписаны на этого пользователя.',
+                'Вы уже подписаны на этого пользователя.',
                 code=status.HTTP_400_BAD_REQUEST,
             )
 
         if user == author:
             raise ValidationError(
-                detail='Нельзя подписаться на самого себя!',
+                'Нельзя подписаться на самого себя!',
                 code=status.HTTP_400_BAD_REQUEST,
             )
 
