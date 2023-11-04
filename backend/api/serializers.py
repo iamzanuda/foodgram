@@ -2,18 +2,16 @@ import base64
 
 from django.core.files.base import ContentFile
 from django.forms import ValidationError
-# from django.shortcuts import get_object_or_404
 from rest_framework import serializers, status
 
 from recipes.models import (Favourite,
+                            Follow,
                             Ingredient,
                             IngredientsAmount,
                             Recipe,
                             ShoppingCart,
                             Tag,
                             User,
-                            Follow,
-                            Favourite,
                             )
 
 
@@ -67,16 +65,6 @@ class UserListSerializer(serializers.ModelSerializer):
             return False
         return user.following.filter(user=obj).exists()
 
-
-class BriefRecipeSerializer(serializers.ModelSerializer):
-    """Необходимые поля для отображения в 'Мои подписки' и в 'Избранное'."""
-
-    class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image',
-                  'cooking_time')
-        # read_only_fields = ('id', 'name', 'image',
-        #                     'cooking_time')
 
 class FollowingSerializer(serializers.ModelSerializer):
     """Для страницы 'Мои подписки'.
@@ -164,10 +152,7 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class BriefRecipeSerializer(serializers.ModelSerializer):
-    """Brief Recipe Serializer для GET запросов.
-
-    Необходимые поля для отображения в подписках и в списке избранного.
-    """
+    """Необходимые поля для отображения в подписках и в списке избранного."""
 
     image = Base64ImageField(
         required=False,
