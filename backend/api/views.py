@@ -8,7 +8,6 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-# from rest_framework.pagination import PageNumberPagination
 
 from .pagination import CustomLimitPaginanation
 
@@ -31,6 +30,7 @@ from recipes.models import (Favourite,
                             User,
                             )
 from .filters import IngredientFilter, RecipeFilter
+from .permissions import IsOwner
 
 
 class CustomUserViewSet(UserViewSet):
@@ -77,7 +77,8 @@ class CustomUserViewSet(UserViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False,
-            methods=['GET'])
+            methods=['GET'],
+            permission_classes=[IsOwner])
     def subscriptions(self, request):
         """Возвращает список пользователей,
         на которых подписан текущий пользователь.
@@ -163,9 +164,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                             status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True,
-            methods=['POST', 'DELETE'],
-            permission_classes=[IsAuthenticated],
-            )
+            methods=['POST', 'DELETE'])
     def shopping_cart(self, request, pk):
         """Добавить рецепт в список покупок.
 

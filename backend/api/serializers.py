@@ -60,6 +60,8 @@ class UserListSerializer(serializers.ModelSerializer):
                   'last_name', 'is_subscribed')
 
     def get_is_subscribed(self, obj):
+        """Определяем подписан ли пользоваиель."""
+
         user = self.context.get("request").user
         if user.is_anonymous or (user == obj):
             return False
@@ -107,16 +109,16 @@ class FollowingSerializer(serializers.ModelSerializer):
     def validate(self, data):
         """Проверяем подписки."""
 
-        author = self.instance
+        following = self.instance
         user = self.context.get('request').user
 
-        if user.following.filter(following=author).exists():
+        if user.follower.filter(following=following).exists():
             raise ValidationError(
-                'Вы уже подписаны на этого пользователя.',
+                'Вы уже подписаны.',
                 code=status.HTTP_400_BAD_REQUEST,
             )
 
-        if user == author:
+        if user == following:
             raise ValidationError(
                 'Нельзя подписаться на самого себя!',
                 code=status.HTTP_400_BAD_REQUEST,
@@ -361,16 +363,14 @@ class FavouriteSerializer(serializers.ModelSerializer):
     """Серилизатор для избранных рецептов."""
 
     class Meta:
-        fields = (
-            'recipe', 'user'
-        )
         model = Favourite
+        fields = ('recipe', 'user')
 
     def validate(self, data):
         user = data['user']
         if user.favourites.filter(recipe=data['recipe']).exists():
             raise serializers.ValidationError(
-                'Рецепт уже добавлен в избранное.'
+                'Рецепт уже в избранном.'
             )
         return data
 
