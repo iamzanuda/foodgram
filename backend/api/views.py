@@ -40,15 +40,17 @@ class CustomUserViewSet(UserViewSet):
         subscriptions
         subscribe
     """
+
     queryset = User.objects.all()
     pagination_class = CustomLimitPaginanation
+    serializer_class = UserListSerializer
 
-    def get_serializer_class(self):
-        """Выбираем сериализатор в зависимости от типа запроса."""
+    # def get_serializer_class(self):
+    #     """Выбираем сериализатор в зависимости от типа запроса."""
 
-        if self.action in ('list', 'retrieve'):
-            return UserListSerializer
-        return UserCreateSerializer
+    #     if self.action in ('list', 'retrieve'):
+    #         return UserListSerializer
+    #     return UserCreateSerializer
 
     @action(detail=True,
             methods=['POST', 'DELETE'],
@@ -248,6 +250,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet Ingredient."""
+
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     filter_backends = [filters.SearchFilter]

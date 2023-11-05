@@ -113,6 +113,7 @@ class FollowingSerializer(serializers.ModelSerializer):
         return data
 
     def get_is_subscribed(self, obj):
+        """Подписан ли пользователь."""
 
         request = self.context.get('request')
         if request and request.user.is_authenticated:
@@ -122,6 +123,7 @@ class FollowingSerializer(serializers.ModelSerializer):
         return False
 
     def get_recipes(self, obj):
+        """Получаем рецепты, устанавливаем лимит в отображении на странице."""
 
         request = self.context.get('request')
         limit = request.GET.get('recipes_limit')
@@ -132,6 +134,8 @@ class FollowingSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def get_recipes_count(self, obj):
+        """Определяем кол-во рецептов."""
+
         return obj.recipes.count()
 
 
@@ -346,13 +350,10 @@ class FavouriteSerializer(serializers.ModelSerializer):
         fields = ('recipe', 'user')
 
     def validate(self, data):
+        """Избегаем повторное добавление рецепта в список избранного."""
+
         user = data['user']
         if user.favourites.filter(recipe=data['recipe']).exists():
             raise serializers.ValidationError(
                 'Рецепт уже в избранном.')
         return data
-
-    def to_representation(self, instance):
-        return BriefRecipeSerializer(
-            instance.recipe,
-            context={'request': self.context.get('request')}).data
