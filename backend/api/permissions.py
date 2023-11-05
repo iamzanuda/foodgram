@@ -2,7 +2,7 @@ from rest_framework import permissions
 
 
 class IsOwner(permissions.BasePermission):
-    """Просмотр доступен только владелецу."""
+    """Просмотр доступен только владельцу."""
 
     message = 'Доступно только владельцу.'
 

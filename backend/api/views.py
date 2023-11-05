@@ -78,7 +78,7 @@ class CustomUserViewSet(UserViewSet):
 
     @action(detail=False,
             methods=['GET'],
-            )  # permission_classes=[IsOwner]
+            permission_classes=[IsAuthenticated])  # [IsOwner]
     def subscriptions(self, request):
         """Возвращает список пользователей,
         на которых подписан текущий пользователь.
@@ -110,9 +110,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     и конкретный рецепт (api/recipes/id).
 
     Эндпоинты @action:
-        download_shopping_cartself
-        shopping_cart
-        favorite
+        /download_shopping_cart
+        /shopping_cart
+        /favorite
     """
 
     queryset = Recipe.objects.all()
@@ -133,7 +133,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return PostRecipeSerializer
 
     def add_or_remove(self, request, model, recipe, message):
-        """Общая функция для создания и удаления."""
+        """Общая функция создания/удаления для
+        списка избранного и списка покупок.
+        """
 
         if request.method == 'POST':
             serializer = BriefRecipeSerializer(
@@ -157,7 +159,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 user=request.user,
                 recipe=recipe).delete()
             return Response(
-                {'detail': message}, status=status.HTTP_204_NO_CONTENT)
+                {'detail': message}, status=status.HTTP_204_NO_CONTENT
+            )
 
     @action(detail=True,
             methods=['POST', 'DELETE'],
@@ -199,8 +202,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             methods=['GET'],
             permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request, pk=None):
-        """Достаем ингридиент и количество, отдаем пользователю
-        фаил в формате txt .
+        """Из рецептов находящихся в списке покупок достаем ингридиенты,
+        сумируем их количество если ингридиенты совпадают, записываем
+        полученные данные в фаил .txt и отдаем пользователю.
         """
 
         ingredients_amounts = IngredientsAmount.objects.select_related(

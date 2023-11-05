@@ -136,6 +136,6 @@ DJOSER = {
     'SERIALIZERS': {
         'user': 'api.serializers.UserListSerializer',
         'current_user': 'api.serializers.UserListSerializer',
-        'user_create': 'api.serializers.UserCreateSerializer',
+        'set_password': 'djoser.serializers.SetPasswordSerializer',
     }
 }

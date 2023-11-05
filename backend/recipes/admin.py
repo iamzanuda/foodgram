@@ -13,6 +13,7 @@ from .models import (Favourite,
 
 class UserAdmin(admin.ModelAdmin):
     list_display = ('email', 'username', 'first_name', 'last_name', 'password')
+    list_filter = ('email', 'username')
 
 
 class RecipeAdmin(admin.ModelAdmin):
@@ -22,6 +23,7 @@ class RecipeAdmin(admin.ModelAdmin):
 
 class IngredientAdmin(admin.ModelAdmin):
     list_display = ('name', 'measurement_unit')
+    # list_filter = ('name')
 
 
 class IngredientsAmountAdmin(admin.ModelAdmin):
@@ -30,7 +32,7 @@ class IngredientsAmountAdmin(admin.ModelAdmin):
 
 class TagAdmin(admin.ModelAdmin):
     list_display = ('name', 'color', 'slug')
-    list_filter = ['name']
+    list_filter = ['slug']
 
 
 class ShoppingCartAdmin(admin.ModelAdmin):

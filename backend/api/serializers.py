@@ -103,14 +103,12 @@ class FollowingSerializer(serializers.ModelSerializer):
         if user.follower.filter(following=following).exists():
             raise ValidationError(
                 'Вы уже подписаны.',
-                code=status.HTTP_400_BAD_REQUEST,
-            )
+                code=status.HTTP_400_BAD_REQUEST)
 
         if user == following:
             raise ValidationError(
                 'Нельзя подписаться на самого себя!',
-                code=status.HTTP_400_BAD_REQUEST,
-            )
+                code=status.HTTP_400_BAD_REQUEST)
 
         return data
 
@@ -287,28 +285,25 @@ class PostRecipeSerializer(serializers.ModelSerializer):
         """Проверяем наличие и дублирование ингридиентов."""
 
         if not value:
-            raise ValidationError('Добавьте ингредиент.')
+            raise ValidationError(
+                'Добавьте ингредиент.')
 
         ingredients = [item['id'] for item in value]
         if len(ingredients) != len(set(ingredients)):
             raise serializers.ValidationError(
-                'Ингридиенты не должны повторяться.'
-            )
+                'Ингридиенты не должны повторяться.')
 
         return value
 
-    def add_item(self, ingredients, recipe):
+    def add_items(self, ingredients, recipe):
         """Добавляем ингридиенты в рецепт."""
 
         IngredientsAmount.objects.bulk_create(
-            [
-                IngredientsAmount(
-                    recipe=recipe,
-                    ingredient_id=ingredient.get('id'),
-                    amount=ingredient.get('amount'),
-                )
-                for ingredient in ingredients
-            ]
+            [IngredientsAmount(
+                recipe=recipe,
+                ingredient_id=ingredient.get('id'),
+                amount=ingredient.get('amount'),
+            )for ingredient in ingredients]
         )
 
     def create(self, validated_data):
@@ -320,7 +315,7 @@ class PostRecipeSerializer(serializers.ModelSerializer):
         recipe = Recipe.objects.create(**validated_data)  # Создаем рецепт
         recipe.tags.set(tags)  # Добавляем тэг
 
-        self.add_item(ingredients, recipe)
+        self.add_items(ingredients, recipe)
         return recipe
 
     def update(self, instance, validated_data):
@@ -329,7 +324,7 @@ class PostRecipeSerializer(serializers.ModelSerializer):
         if 'ingredients' in validated_data:
             ingredients = validated_data.pop('ingredients')
             instance.ingredients.clear()
-            self.add_item(ingredients, instance)
+            self.add_items(ingredients, instance)
         if 'tags' in validated_data:
             instance.tags.set(validated_data.pop('tags'))
         return super().update(instance, validated_data)
@@ -340,8 +335,7 @@ class PostRecipeSerializer(serializers.ModelSerializer):
         """
 
         return GetRecipeSerializer(
-            instance, context={'request': self.context.get('request')}
-        ).data
+            instance, context={'request': self.context.get('request')}).data
 
 
 class FavouriteSerializer(serializers.ModelSerializer):
@@ -355,12 +349,10 @@ class FavouriteSerializer(serializers.ModelSerializer):
         user = data['user']
         if user.favourites.filter(recipe=data['recipe']).exists():
             raise serializers.ValidationError(
-                'Рецепт уже в избранном.'
-            )
+                'Рецепт уже в избранном.')
         return data
 
     def to_representation(self, instance):
         return BriefRecipeSerializer(
             instance.recipe,
-            context={'request': self.context.get('request')}
-        ).data
+            context={'request': self.context.get('request')}).data
