@@ -20,7 +20,6 @@ from .serializers import (BriefRecipeSerializer,
                           IngredientSerializer,
                           PostRecipeSerializer,
                           TagSerializer,
-                          UserCreateSerializer,
                           UserListSerializer)
 from recipes.models import (Favourite,
                             Follow,
