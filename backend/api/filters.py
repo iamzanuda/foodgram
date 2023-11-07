@@ -38,4 +38,4 @@ class RecipeFilter(FilterSet):
         if value and self.request.user.is_authenticated:
             return queryset.filter(
                 shop_recipe__user=self.request.user)
-        return
+        return queryset
