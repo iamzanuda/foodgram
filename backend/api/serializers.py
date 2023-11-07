@@ -4,15 +4,8 @@ from django.core.files.base import ContentFile
 from django.forms import ValidationError
 from rest_framework import serializers, status
 
-from recipes.models import (Favourite,
-                            Follow,
-                            Ingredient,
-                            IngredientsAmount,
-                            Recipe,
-                            ShoppingCart,
-                            Tag,
-                            User,
-                            )
+from recipes.models import (Favourite, Follow, Ingredient, IngredientsAmount,
+                            Recipe, ShoppingCart, Tag, User)
 
 
 class Base64ImageField(serializers.ImageField):
@@ -123,7 +116,7 @@ class FollowingSerializer(serializers.ModelSerializer):
         return False
 
     def get_recipes(self, obj):
-        """Получаем рецепты, устанавливаем лимит в отображении на странице."""
+        """Получаем рецепты и устанавливаем лимит в отображении странице."""
 
         request = self.context.get('request')
         limit = request.GET.get('recipes_limit')

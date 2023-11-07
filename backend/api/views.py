@@ -4,30 +4,20 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
-
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .filters import (RecipeFilter,
-                      SearchIngredientFilter,)
+
+from .filters import RecipeFilter, SearchIngredientFilter
 from .pagination import CustomLimitPaginanation
-from .serializers import (BriefRecipeSerializer,
-                          FollowingSerializer,
-                          GetRecipeSerializer,
-                          IngredientSerializer,
-                          PostRecipeSerializer,
-                          TagSerializer,
+from .serializers import (BriefRecipeSerializer, FollowingSerializer,
+                          GetRecipeSerializer, IngredientSerializer,
+                          PostRecipeSerializer, TagSerializer,
                           UserListSerializer)
-from recipes.models import (Favourite,
-                            Follow,
-                            Ingredient,
-                            IngredientsAmount,
-                            Recipe,
-                            ShoppingCart,
-                            Tag,
-                            User)
+from recipes.models import (Favourite, Follow, Ingredient, IngredientsAmount,
+                            Recipe, ShoppingCart, Tag, User)
 
 
 class CustomUserViewSet(UserViewSet):

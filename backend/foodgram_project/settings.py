@@ -136,4 +136,4 @@ DJOSER = {
     # 'SERIALIZERS': {
     #     'user': 'api.serializers.UserListSerializer',
     #     'current_user': 'api.serializers.UserListSerializer',
-    }
+}
