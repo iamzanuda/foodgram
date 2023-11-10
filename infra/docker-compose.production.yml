@@ -23,6 +23,7 @@ services:
 
   frontend:
     image: mralmostfreeman/foodgram_frontend:latest
+    env_file: .env
     volumes:
       - ../frontend/:/app/result_build/
 
@@ -38,5 +39,5 @@ services:
       - static:/static/
       - media:/app/media/
     depends_on:
-      - frontend
       - backend
+      - frontend
