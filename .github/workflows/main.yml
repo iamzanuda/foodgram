@@ -39,7 +39,7 @@ jobs:
       run: |
         python -m flake8 backend/
 
-  build_and_push_in_to_docker_hub:
+  build_and_push_to_docker_hub:
     name: Push Docker image to DockerHub
     runs-on: ubuntu-latest
     needs: tests
@@ -78,10 +78,19 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs:
-      - build_and_push_in_to_docker_hub
+      - build_and_push_to_docker_hub
     steps:
     - name: Checkout repo
       uses: actions/checkout@v3
+    - name: Copy docker-compose.yml via ssh
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_KEY }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        source: "docker-compose.production.yml"
+        target: "infra/docker-compose.production.yml"
     - name: Executing remote ssh commands to deploy
       uses: appleboy/ssh-action@master
       with:
@@ -96,7 +105,8 @@ jobs:
           sudo docker compose -f docker-compose.production.yml up -d
           sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
           sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
-          sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/static/. /static/static/ 
+          sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/static/. /static/static/
+          sudo docker system prune -af
 
   send_message:
     runs-on: ubuntu-latest
