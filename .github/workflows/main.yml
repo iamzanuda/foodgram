@@ -83,7 +83,7 @@ jobs:
           push: true
           tags: mralmostfreeman/foodgram_backend:latest
 
-  build_infra_and_push_to_docker_hub:
+  build_in_infra_and_push_to_docker_hub:
     name: Push infra Docker image to DockerHub
     runs-on: ubuntu-latest
     steps:
@@ -111,7 +111,7 @@ jobs:
     needs:
       - build_backend_and_push_to_docker_hub
       - build_frontend_and_push_to_docker_hub
-      - build_infra_and_push_to_docker_hub
+      - build_in_infra_and_push_to_docker_hub
     steps:
     - name: Checkout repo
       uses: actions/checkout@v3
