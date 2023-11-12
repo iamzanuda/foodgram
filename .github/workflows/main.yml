@@ -87,7 +87,7 @@ jobs:
         with:
           context: ./frontend/
           push: true
-          tags: mralmostfreeman/foodgram_backend:latest
+          tags: mralmostfreeman/foodgram_frontend:latest
 
   build_in_infra_and_push_to_docker_hub:
     name: Push infra Docker image to DockerHub
