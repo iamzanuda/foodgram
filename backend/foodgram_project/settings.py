@@ -13,6 +13,7 @@ DEBUG = os.getenv('DEBUG') == 'True'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
 
+PAGINATED_PAGE_SIZE = os.getenv('PAGINATED_PAGE_SIZE')
 
 INSTALLED_APPS = [
     'api.apps.ApiConfig',
@@ -120,7 +121,7 @@ REST_FRAMEWORK = {
     ],
 
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': os.getenv('PAGINATED_PAGE_SIZE'),
+    'PAGE_SIZE': PAGINATED_PAGE_SIZE,
 }
 
 DJOSER = {
