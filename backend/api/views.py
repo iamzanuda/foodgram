@@ -32,13 +32,6 @@ class CustomUserViewSet(UserViewSet):
     pagination_class = CustomLimitPaginanation
     serializer_class = UserListSerializer
 
-    # def get_serializer_class(self):
-    #     """Выбираем сериализатор в зависимости от типа запроса."""
-
-    #     if self.action in ('list', 'retrieve'):
-    #         return UserListSerializer
-    #     return UserCreateSerializer
-
     @action(detail=True,
             methods=['POST', 'DELETE'],
             permission_classes=[IsAuthenticated])
@@ -67,7 +60,7 @@ class CustomUserViewSet(UserViewSet):
 
     @action(detail=False,
             methods=['GET'],
-            permission_classes=[IsAuthenticated])  # [IsOwner]
+            permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
         """Возвращает список пользователей,
         на которых подписан текущий пользователь.

@@ -120,12 +120,9 @@ REST_FRAMEWORK = {
     ],
 
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 6,
+    'PAGE_SIZE': os.getenv('PAGINATED_PAGE_SIZE'),
 }
 
 DJOSER = {
     'LOGIN_FIELD': 'email',
-    # 'SERIALIZERS': {
-    #     'user': 'api.serializers.UserListSerializer',
-    #     'current_user': 'api.serializers.UserListSerializer',
 }
