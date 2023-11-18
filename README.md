@@ -38,4 +38,5 @@
 + dockerhub_username: mralmostfreeman
 + 
 + superuser: yaro@yaro.com
-+ pasword: 1
++ pasword_1: 1
++ pasword_2:poiuytrewq08642

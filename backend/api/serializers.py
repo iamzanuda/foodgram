@@ -287,8 +287,9 @@ class PostRecipeSerializer(serializers.ModelSerializer):
 
         ingredients = [item['id'] for item in value]
         if len(ingredients) != len(set(ingredients)):
-            raise serializers.ValidationError(
-                'Ингридиенты не должны повторяться.')
+            raise serializers.ValidationError([{
+                'ingredients': ['Ингридиенты не должны повторяться.']}]
+            )
 
         return value
 
