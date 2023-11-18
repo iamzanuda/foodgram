@@ -13,7 +13,6 @@ router.register('ingredients', IngredientViewSet, basename='ingredients')
 
 
 urlpatterns = [
-    # Можно добавить версию апи(v1)
     path('', include(router.urls)),
     path('', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
