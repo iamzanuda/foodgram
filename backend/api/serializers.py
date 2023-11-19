@@ -243,7 +243,10 @@ class AddIngredientsSerializer(serializers.ModelSerializer):
     """Отображаем необходимые поля при POST запросе на создание рецепта."""
 
     id = serializers.IntegerField()
-    amount = serializers.IntegerField()
+    amount = serializers.IntegerField(
+        min_value=1,
+        max_value=1500,
+    )
 
     class Meta:
         model = IngredientsAmount
@@ -261,7 +264,9 @@ class PostRecipeSerializer(serializers.ModelSerializer):
         queryset=Tag.objects.all())
     ingredients = AddIngredientsSerializer(
         many=True)
-    cooking_time = serializers.IntegerField()
+    cooking_time = serializers.IntegerField(
+        min_value=1,
+        max_value=240,)
     image = Base64ImageField(
         required=False,
         allow_null=True)
