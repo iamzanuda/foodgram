@@ -107,9 +107,17 @@ class Recipe(models.Model):
         verbose_name='Описание')
     cooking_time = models.PositiveIntegerField(
         default=1,
-        validators=[MinValueValidator(1),
-                    MaxValueValidator(1500)],
+        validators=(
+            MinValueValidator(1),
+            MaxValueValidator(240),
+        ),
         verbose_name='Время приготовления в минутах')
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата публикации',)
+
+    class Meta:
+        ordering = ('-pub_date',)
 
     def __str__(self):
         return self.name
@@ -130,9 +138,11 @@ class IngredientsAmount(models.Model):
         verbose_name='Ингредиенты')
     amount = models.PositiveIntegerField(
         default=1,
-        validators=[MinValueValidator(1),
-                    MaxValueValidator(1500)],
-        verbose_name='Количество')
+        validators=(
+            MinValueValidator(1),
+            MaxValueValidator(1000),
+        ),
+        verbose_name='Количество',)
 
     def __str__(self):
         return f'{self.recipe} - {self.ingredient}: {self.amount}'
