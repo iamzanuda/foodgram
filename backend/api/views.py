@@ -114,9 +114,45 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return GetRecipeSerializer
         return PostRecipeSerializer
 
+    # def add_or_remove(self, request, model, recipe, message):
+    #     """Общая функция создания/удаления для
+    #     списка избранного и списка покупок.
+    #     """
+
+    #     if request.method == 'POST':
+    #         serializer = BriefRecipeSerializer(
+    #             recipe,
+    #             data=request.data,
+    #             context={"request": request})
+    #         serializer.is_valid(raise_exception=True)
+
+    #         if not model.objects.filter(user=request.user,
+    #                                     recipe=recipe).exists():
+    #             model.objects.create(user=request.user, recipe=recipe)
+    #             return Response(serializer.data,
+    #                             status=status.HTTP_201_CREATED)
+
+    #         return Response({'errors': 'Уже в списке.'},
+    #                         status=status.HTTP_400_BAD_REQUEST)
+
+    #     if request.method == 'DELETE':
+    #         get_object_or_404(
+    #             model,
+    #             user=request.user,
+    #             recipe=recipe).delete()
+    #         return Response(
+    #             {'detail': message}, status=status.HTTP_204_NO_CONTENT
+    #         )
+
     def add_or_remove(self, request, model, recipe, message):
         """Общая функция создания/удаления для
         списка избранного и списка покупок.
+
+        Настроенна проверка на существование рецепта перед
+        созданием и удалением.
+
+        Проверка на наличие рецепта в корзине или в избранном,
+        для избежания повторного добавления.
         """
 
         if request.method == 'POST':
@@ -128,6 +164,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
             if not model.objects.filter(user=request.user,
                                         recipe=recipe).exists():
+                if not recipe:
+                    return Response({'errors': 'Рецепт не существует.'},
+                                    status=status.HTTP_400_BAD_REQUEST)
+
                 model.objects.create(user=request.user, recipe=recipe)
                 return Response(serializer.data,
                                 status=status.HTTP_201_CREATED)
@@ -136,13 +176,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
                             status=status.HTTP_400_BAD_REQUEST)
 
         if request.method == 'DELETE':
-            get_object_or_404(
-                model,
-                user=request.user,
-                recipe=recipe).delete()
-            return Response(
-                {'detail': message}, status=status.HTTP_204_NO_CONTENT
-            )
+            try:
+                favorite_recipe = model.objects.get(user=request.user,
+                                                    recipe=recipe)
+            except model.DoesNotExist:
+                return Response({'errors': 'Рецепт не существует.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            favorite_recipe.delete()
+            return Response({'detail': message},
+                            status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True,
             methods=['POST', 'DELETE'],

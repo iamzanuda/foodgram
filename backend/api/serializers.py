@@ -277,27 +277,63 @@ class PostRecipeSerializer(serializers.ModelSerializer):
                   'name', 'text', 'cooking_time')
 
     def validate_tags(self, value):
-        """Проверяем наличие тэгов."""
+        """Проверяем наличие тэгов и отсутствие повторяющихся тегов."""
 
+        # Проверка наличия тегов
         if not value:
             raise serializers.ValidationError(
                 'Добавьте тег.')
+
+        # Проверка наличия повторяющихся тегов
+        if len(set(value)) != len(value):
+            raise serializers.ValidationError(
+                'Найдены повторяющиеся теги.')
+
         return value
 
     def validate_ingredients(self, value):
-        """Проверяем наличие и дублирование ингридиентов."""
+        """Проверяем наличие, наличие несуществующих и
+        дублирование ингридиентов.
+        """
 
+        # Проверка наличия ингредиентов
         if not value:
             raise serializers.ValidationError(
                 'Добавьте ингредиент.')
 
         ingredients = [item['id'] for item in value]
+
+        # Проверка наличия дублирующихся ингредиентов
         if len(ingredients) != len(set(ingredients)):
             raise serializers.ValidationError([{
                 'ingredients': ['Ингридиенты не должны повторяться.']}]
             )
 
+        # Проверка наличия несуществующих ингредиентов
+        existing_ingredients = Ingredient.objects.filter(id__in=ingredients)
+        existing_ids = set(
+            [ingredient.id for ingredient in existing_ingredients]
+        )
+        non_existing_ids = set(ingredients) - existing_ids
+        if non_existing_ids:
+            raise serializers.ValidationError({
+                'ingredients': [
+                    'Следующие ингредиенты не существуют: {}'
+                    .format(non_existing_ids)]
+            })
+
         return value
+
+    # def validate_image(self, value):
+    #     """Если значение поля 'image' пустое или не передано,
+    #     будет выброшено исключениет.
+    #     """
+
+    #     if not value:
+    #         raise serializers.ValidationError(
+    #             'Необходимо добавить изображение.')
+
+    #     return value
 
     def add_items(self, ingredients, recipe):
         """Добавляем ингридиенты в рецепт."""
@@ -311,7 +347,16 @@ class PostRecipeSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
-        """Создаем рецепт на основе валидированных данных."""
+        """Создаем рецепт на основе валидированных данных.
+
+        Настроенна проверка что если при создании рецепта значение поля 'image'
+        пустое или не передано будет выброшено исключениет.
+        """
+
+        # Проверка наличия поля 'image'
+        if 'image' not in validated_data:
+            raise serializers.ValidationError(
+                'Добавьте изображение.')
 
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
