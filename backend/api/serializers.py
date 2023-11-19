@@ -275,14 +275,15 @@ class PostRecipeSerializer(serializers.ModelSerializer):
         """Проверяем наличие тэгов."""
 
         if not value:
-            raise ValidationError('Добавьте тег.')
+            raise serializers.ValidationError(
+                'Добавьте тег.')
         return value
 
     def validate_ingredients(self, value):
         """Проверяем наличие и дублирование ингридиентов."""
 
         if not value:
-            raise ValidationError(
+            raise serializers.ValidationError(
                 'Добавьте ингредиент.')
 
         ingredients = [item['id'] for item in value]

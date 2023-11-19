@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from .validators import validate_username
@@ -104,8 +105,10 @@ class Recipe(models.Model):
     text = models.TextField(
         max_length=500,
         verbose_name='Описание')
-    cooking_time = models.PositiveSmallIntegerField(
+    cooking_time = models.PositiveIntegerField(
         default=1,
+        validators=[MinValueValidator(1),
+                    MaxValueValidator(1500)],
         verbose_name='Время приготовления в минутах')
 
     def __str__(self):
@@ -125,8 +128,10 @@ class IngredientsAmount(models.Model):
         on_delete=models.CASCADE,
         related_name='ingredients_amount',
         verbose_name='Ингредиенты')
-    amount = models.PositiveSmallIntegerField(
+    amount = models.PositiveIntegerField(
         default=1,
+        validators=[MinValueValidator(1),
+                    MaxValueValidator(1500)],
         verbose_name='Количество')
 
     def __str__(self):

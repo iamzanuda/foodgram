@@ -11,7 +11,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-incecure-123')
 
 DEBUG = os.getenv('DEBUG') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')  # ['84.201.140.123', '127.0.0.1', 'localhost', 'foodkilogram.hopto.org']
 
 
 INSTALLED_APPS = [
@@ -70,6 +70,13 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', 5432)
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -134,5 +141,7 @@ DJOSER = {
 
     'PERMISSIONS': {
         'user': ['rest_framework.permissions.AllowAny'],
+        'user_list': ['rest_framework.permissions.AllowAny'],
+        'current_user': ['rest_framework.permissions.IsAuthenticated'],
     },
 }
