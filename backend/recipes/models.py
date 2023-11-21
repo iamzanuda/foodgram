@@ -109,8 +109,7 @@ class Recipe(models.Model):
         default=1,
         validators=(
             MinValueValidator(1),
-            MaxValueValidator(240),
-        ),
+            MaxValueValidator(240),),
         verbose_name='Время приготовления в минутах')
     pub_date = models.DateTimeField(
         auto_now_add=True,
