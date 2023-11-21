@@ -12,7 +12,7 @@ class UserAdmin(admin.ModelAdmin):
 
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('author', 'name', 'in_favorites_amount')
-    list_filter = ('author', 'name', 'tags', 'pub_date')
+    list_filter = ('author', 'name', 'tags')
 
     @display(description='Кол-во добавлений в избранное.')
     def in_favorites_amount(self, obj):
