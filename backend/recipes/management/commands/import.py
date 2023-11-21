@@ -7,7 +7,7 @@ from django.db import transaction
 
 from recipes.models import Ingredient
 
-DATA_ROOT = os.path.join(settings.BASE_DIR, "data")
+DATA_ROOT = os.path.join(settings.BASE_DIR, 'data')
 
 
 class Command(BaseCommand):
