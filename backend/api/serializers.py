@@ -324,17 +324,6 @@ class PostRecipeSerializer(serializers.ModelSerializer):
 
         return value
 
-    # def validate_image(self, value):
-    #     """Если значение поля 'image' пустое или не передано,
-    #     будет выброшено исключениет.
-    #     """
-
-    #     if not value:
-    #         raise serializers.ValidationError(
-    #             'Необходимо добавить изображение.')
-
-    #     return value
-
     def add_items(self, ingredients, recipe):
         """Добавляем ингридиенты в рецепт."""
 
@@ -374,8 +363,16 @@ class PostRecipeSerializer(serializers.ModelSerializer):
             ingredients = validated_data.pop('ingredients')
             instance.ingredients.clear()
             self.add_items(ingredients, instance)
+        else:
+            raise serializers.ValidationError(
+                'Поле "ingredients" обязательно.')
+
         if 'tags' in validated_data:
             instance.tags.set(validated_data.pop('tags'))
+        else:
+            raise serializers.ValidationError(
+                'Поле "tags" обязательно.')
+
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
