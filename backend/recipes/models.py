@@ -111,12 +111,12 @@ class Recipe(models.Model):
             MinValueValidator(1),
             MaxValueValidator(240),),
         verbose_name='Время приготовления в минутах')
-    # pub_date = models.DateTimeField(
-    #     auto_now_add=True,
-    #     verbose_name='Дата публикации рецепта',)
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата публикации рецепта',)
 
-    # class Meta:
-    #     ordering = ('-pub_date',)
+    class Meta:
+        ordering = ('-pub_date',)
 
     def __str__(self):
         return self.name
