@@ -48,12 +48,13 @@ class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'id', 'username', 'first_name',
-                  'last_name', 'is_subscribed')
+                  'last_name', 'is_subscribed'
+                  )
 
     def get_is_subscribed(self, obj):
         """Определяем подписан ли пользоваиель."""
 
-        user = self.context.get("request").user
+        user = self.context.get('request').user
         if user.is_anonymous or (user == obj):
             return False
         return user.following.filter(user=obj).exists()
@@ -158,7 +159,8 @@ class BriefRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image',
-                  'cooking_time')
+                  'cooking_time'
+                  )
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -220,7 +222,8 @@ class GetRecipeSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = ('id', 'tags', 'author', 'ingredients', 'is_favorited',
                   'is_in_shopping_cart', 'name', 'image', 'text',
-                  'cooking_time')
+                  'cooking_time'
+                  )
 
     def get_is_favorited(self, obj):
         """Находится ли в избранном."""
@@ -274,7 +277,8 @@ class PostRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'ingredients', 'tags', 'image',
-                  'name', 'text', 'cooking_time')
+                  'name', 'text', 'cooking_time'
+                  )
 
     def validate_tags(self, value):
         """Проверяем наличие тэгов и отсутствие повторяющихся тегов."""

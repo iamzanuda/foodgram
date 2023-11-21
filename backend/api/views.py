@@ -6,8 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import (SAFE_METHODS, IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
 
 from .filters import RecipeFilter, SearchIngredientFilter
@@ -35,7 +34,7 @@ class CustomUserViewSet(UserViewSet):
 
     @action(detail=True,
             methods=['POST', 'DELETE'],
-            permission_classes=(IsAuthenticatedOrReadOnly,))
+            permission_classes=(IsAuthenticated,))
     def subscribe(self, request, **kwargs):
         """Подписаться на пользователя.
 
@@ -47,7 +46,7 @@ class CustomUserViewSet(UserViewSet):
 
         if request.method == 'POST':
             serializer = FollowingSerializer(
-                author, data=request.data, context={"request": request})
+                author, data=request.data, context={'request': request})
             serializer.is_valid(raise_exception=True)
             Follow.objects.create(user=user, following=author)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
