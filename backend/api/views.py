@@ -33,7 +33,7 @@ class CustomUserViewSet(UserViewSet):
     serializer_class = UserListSerializer
 
     @action(detail=True,
-            methods=['POST', 'DELETE'],
+            methods=('POST', 'DELETE'),
             permission_classes=(IsAuthenticated,))
     def subscribe(self, request, **kwargs):
         """Подписаться на пользователя.
@@ -65,7 +65,7 @@ class CustomUserViewSet(UserViewSet):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False,
-            methods=['GET'],
+            methods=('GET'),
             permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
         """Возвращает список пользователей,
@@ -160,7 +160,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                             status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True,
-            methods=['POST', 'DELETE'],
+            methods=('POST', 'DELETE'),
             permission_classes=(IsAuthenticated,))
     def favorite(self, request, pk):
         """Добавить рецепт в список избранное.
@@ -178,7 +178,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
 
     @action(detail=True,
-            methods=['POST', 'DELETE'],
+            methods=('POST', 'DELETE'),
             permission_classes=(IsAuthenticated,))
     def shopping_cart(self, request, pk):
         """Добавить рецепт в список покупок.
@@ -196,7 +196,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
 
     @action(detail=False,
-            methods=['GET'],
+            methods=('GET'),
             permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request, pk=None):
         """Из рецептов находящихся в списке покупок достаем ингридиенты,

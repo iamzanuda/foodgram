@@ -37,6 +37,5 @@
 + foodgram_ip: 84.201.140.123
 + dockerhub_username: mralmostfreeman
 + 
-+ superuser: yaro@yaro.com
++ superuser: yar@yar.com
 + pasword_1: 1
-+ pasword_2:poiuytrewq08642

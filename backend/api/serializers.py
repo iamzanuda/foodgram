@@ -1,11 +1,15 @@
 import base64
+import os
 
 from django.core.files.base import ContentFile
 from django.forms import ValidationError
+from dotenv import load_dotenv
 from rest_framework import serializers, status
 
 from recipes.models import (Favourite, Follow, Ingredient, IngredientsAmount,
                             Recipe, ShoppingCart, Tag, User)
+
+load_dotenv()
 
 
 class Base64ImageField(serializers.ImageField):
@@ -247,8 +251,8 @@ class AddIngredientsSerializer(serializers.ModelSerializer):
 
     id = serializers.IntegerField()
     amount = serializers.IntegerField(
-        min_value=1,
-        max_value=1500,
+        min_value=os.getenv('MIN_INGREDIENT_AMOUNT'),
+        max_value=os.getenv('MAX_INGREDIENT_AMOUNT'),
     )
 
     class Meta:
@@ -268,8 +272,9 @@ class PostRecipeSerializer(serializers.ModelSerializer):
     ingredients = AddIngredientsSerializer(
         many=True)
     cooking_time = serializers.IntegerField(
-        min_value=1,
-        max_value=240,)
+        min_value=os.getenv('MIN_COOKING_TIME'),
+        max_value=os.getenv('MAX_COOKING_TIME'),
+    )
     image = Base64ImageField(
         required=False,
         allow_null=True)

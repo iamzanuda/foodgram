@@ -1,6 +1,9 @@
+import re
+
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.forms import ValidationError
 
 from .validators import validate_username
 
@@ -65,6 +68,15 @@ class Tag(models.Model):
 
     def __str__(self):
         return self.name
+
+    def check_color(self):
+        """Проверяем соответствие и формат цветового кода."""
+
+        if self.color not in [choice[0] for choice in self.TAG_COLOR_CODE]:
+            raise ValidationError('Недопустимый цвет')
+
+        if not re.match(r'^#[a-fA-F0-9]{6}$', self.color):
+            raise ValidationError('Неверный формат цветового кода')
 
 
 class Ingredient(models.Model):
