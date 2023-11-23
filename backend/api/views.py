@@ -65,7 +65,6 @@ class CustomUserViewSet(UserViewSet):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False,
-            methods=('GET'),
             permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
         """Возвращает список пользователей,
@@ -196,7 +195,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
 
     @action(detail=False,
-            methods=('GET'),
             permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request, pk=None):
         """Из рецептов находящихся в списке покупок достаем ингридиенты,
