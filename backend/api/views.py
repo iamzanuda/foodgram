@@ -9,6 +9,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
 
+from rest_framework.exceptions import PermissionDenied
+
 from .filters import RecipeFilter, SearchIngredientFilter
 from .pagination import CustomLimitPaginanation
 from .permissions import IsUserOrAdmin
@@ -114,16 +116,34 @@ class RecipeViewSet(viewsets.ModelViewSet):
         /favorite
     """
 
-    queryset = Recipe.objects.all()
     pagination_class = CustomLimitPaginanation
     permission_classes = (IsUserOrAdmin,)
     filter_backends = (DjangoFilterBackend, )
     filterset_class = RecipeFilter
 
-    def perform_create(self, serializer):
-        """Сохраняем текущего пользователя."""
+    def get_queryset(self):
+        queryset = Recipe.objects.all().order_by('-id')
+        return queryset
 
+    def perform_create(self, serializer):
+        """Определяем текущего пользователя."""
+
+        if not self.request.user.is_authenticated:
+            raise PermissionDenied(
+                'Только авторизованный пользователь может создать рецепт.')
         serializer.save(author=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        """Даем право на создание рецепта только
+        авторизованному пользователю.
+        """
+
+        if not request.user.is_authenticated:
+            return Response(
+                {'detail': 'Only registered users can create recipes.'},
+                status=401)
+
+        return super().create(request, *args, **kwargs)
 
     def get_serializer_class(self):
         """Выбираем сериализатор в зависимости от типа запроса."""
