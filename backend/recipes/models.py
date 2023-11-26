@@ -13,7 +13,7 @@ class User(AbstractUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ('username', 'first_name',
-                       'last_name', 'password')
+                       'last_name', 'password',)
 
     email = models.EmailField(
         max_length=254,
