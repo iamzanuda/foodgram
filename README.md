@@ -30,12 +30,3 @@
 Проект Foodgram доступен по доменному имени _**foodkilogram.hopto.org**_
 
 Автор Ярослав Б.
-
-## Информация для ревью.
-+ repo_owner: iamzanuda
-+ foodgram_domain: https://foodkilogram.hopto.org/
-+ foodgram_ip: 84.201.140.123
-+ dockerhub_username: mralmostfreeman
-+ 
-+ superuser: yar@yar.com
-+ pasword_1: 1
