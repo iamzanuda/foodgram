@@ -18,8 +18,8 @@
 + Создание и редактирование рецепта.
 
 **Используемые технологии:**
-+ Python 
-+ Django
++ Python 3.9
++ Django 3.2.3
 + Djoser
 + Docker
 + Nginx
