@@ -29,4 +29,4 @@
 
 Проект Foodgram доступен по доменному имени _**foodkilogram.hopto.org**_
 
-**Автор** Yaroslav Baramykov
+**Автор:** Yaroslav Baramykov
